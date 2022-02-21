@@ -3,7 +3,7 @@ const mc_facts = require('./minecraft_facts.js');
 
 // an example natural program
 
-const unknown = "unknown";
+const unknown = null;
 
 class Constraint {
     constructor(object, location) {
@@ -43,7 +43,6 @@ function manual_user(target_id) {
     // try to construct the natural program
     let item_name = mc_facts.ingredients_dict[target_id].l_name;
     var ret_np = {
-        is_primitive: false,
         name: "make " + item_name,
     }
     let steps = [];
@@ -54,7 +53,7 @@ function manual_user(target_id) {
         unique_ingredients.forEach(function(item) {
             if (item != 0) {
                 let pick_cmd_name = "pick_" + item;
-                let pick_cmd = mc_facts.primitives_dict[pick_cmd_name];
+                let pick_cmd = pick_cmd_name; // mc_facts.primitives_dict[pick_cmd_name];
                 steps.push(pick_cmd);
                 for (var loc = 0; loc < cur_recipe.length; loc++) {
                     if (cur_recipe[loc] == item) {
@@ -64,7 +63,7 @@ function manual_user(target_id) {
                 }
             }
         });
-        steps.push(mc_facts.primitives_dict["craft"]);
+        steps.push("craft");
     }
     ret_np.steps = steps;
     return ret_np;
