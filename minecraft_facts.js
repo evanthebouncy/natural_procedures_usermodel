@@ -61,7 +61,6 @@ function sample_makeable_item() {
 module.exports = {
     get_full_construction, 
     ingredients_dict, 
-    // primitives_dict, 
     recipe_loc_to_place_cmd,
     all_items,
     sample_makeable_item,
