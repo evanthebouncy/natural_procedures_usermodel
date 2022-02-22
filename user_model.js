@@ -29,8 +29,6 @@ let np1 = {
 // takes in a target_id
 // returns a list of primitives that makes this id
 function recursive_craft(target_id, ingredients_dict) {
-    console.log(target_id);
-    console.log(ingredients_dict[target_id]);
     let recipe = ingredients_dict[target_id].recipe;
     // if there's nothing to decompose, simply return no action
     if (recipe == null) {
@@ -45,6 +43,8 @@ function recursive_craft(target_id, ingredients_dict) {
         }
     }
     // use the recipe to craft the target in a series of pick and place
+    // kinda inefficient because we are picking and placing each time, 
+    // rather than picking and placing multiple times with the same item
     for (let i = 0; i < recipe.length; i++) {
         if (recipe[i] != 0) {
             let pick_cmd = "pick_" + recipe[i];
@@ -60,8 +60,10 @@ function recursive_craft(target_id, ingredients_dict) {
 // this user just emits out a long list of primitives
 function manual_user(target_id) {
     let item_name = mc_facts.ingredients_dict[target_id].l_name;
+    let fuzzed_name = mc_facts.fuzz_name(item_name);
+    console.log("original name: " + item_name);
     var ret_np = {
-        name: "make " + item_name,
+        name: "make " + fuzzed_name,
     }
     let steps = recursive_craft(target_id, mc_facts.ingredients_dict);
     ret_np.steps = steps;
