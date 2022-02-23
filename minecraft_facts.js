@@ -70,7 +70,6 @@ function count_makeable_item() {
     return count;
 }
 
-
 // fuzz the name with a similar name
 function fuzz_name(name) {
     // get the words in name
