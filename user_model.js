@@ -51,8 +51,8 @@ function manual_user(target_id) {
 }
 
 
-// let manual_np = manual_user(mc_facts.sample_makeable_item());
-// console.log(manual_np);
+let manual_np = manual_user(mc_facts.sample_makeable_item());
+console.log(manual_np);
 
 // Recursive Natural Program Generation
 
@@ -179,8 +179,12 @@ function get_all_at_once(target_id, effort_ratio) {
 
 // given a target_id, ensure its ingredients are in inventory
 function get_prereq_np(target_id, effort_ratio) {
+    let nl = nl_prereq(target_id, effort_ratio);
+
     let recipe = mc_facts.ingredients_dict[target_id].recipe;
+
     // get unique count ingredients from recipe as constraint
+    // assume the user is not lazy about this one (for now)
     let ingredients = {};
     for (let i = 0; i < recipe.length; i++) {
         if (recipe[i] != 0) {
@@ -191,17 +195,29 @@ function get_prereq_np(target_id, effort_ratio) {
             ingredients[recipe[i]] += 1;
         }
     }
-    let nl = nl_prereq(target_id, effort_ratio);
     let phi = phi_inventory(ingredients);
 
+    // we _could_ however be lazy about this one
     let steps = [];
-
     for (let i = 0; i < recipe.length; i++) {
         if (recipe[i] != 0) {
-            // attempt to satisfy this recipe all at once
-            let make_np = get_all_at_once(recipe[i], effort_ratio);
-            steps.push(make_np);
+            // use effort to decide if we even need to do this step
+            if (Math.random() < effort_ratio + 0.5) {
+                // attempt to satisfy this recipe item all at once
+                let make_np = get_all_at_once(recipe[i], effort_ratio);
+                let lazy_unk = unknown;
+                // use effort to decide weather to use make_np or lazy_unk
+                if (Math.random() < effort_ratio) {
+                    steps.push(make_np);
+                } else {
+                    steps.push(lazy_unk);
+                }
+            }
         }
+    }
+    // make sure we are not overtly lazy
+    if (steps.length == 0) {
+        steps.push(unknown);
     }
 
     return {
@@ -218,27 +234,43 @@ function get_craft_np(target_id, effort_ratio) {
     inventory_state[target_id] = 1;
     let phi = phi_inventory(inventory_state);
     let recipe = mc_facts.ingredients_dict[target_id].recipe;
+
     let steps = [];
 
     for (let i = 0; i < recipe.length; i++) {
         if (recipe[i] != 0) {
+            // use effort to decide if we even need to do this step
+            if (Math.random() < effort_ratio + 0.5) {
+                
+                let pick_nl = nl_pick(recipe[i], effort_ratio);
+                let pick_cmd = {
+                    name: pick_nl,
+                    steps: [unknown],
+                }
+                let lazy_unk = unknown;
+                // use effort to decide weather to use pick_cmd or lazy_unk
+                if (Math.random() < effort_ratio) {
+                    steps.push(pick_cmd);
+                } else {
+                    steps.push(lazy_unk);
+                }
 
-            let pick_nl = nl_pick(recipe[i], effort_ratio);
-            let pick_cmd = {
-                name: pick_nl,
-                steps: [unknown],
+                let place_nl = nl_place(i, effort_ratio);
+                let place_cmd = {
+                    name: place_nl,
+                    steps: [unknown],
+                }
+                // use effort to decide weather to use place_cmd or lazy_unk
+                if (Math.random() < effort_ratio) {
+                    steps.push(place_cmd);
+                } else {
+                    steps.push(lazy_unk);
+                }
             }
-            steps.push(pick_cmd);
-
-            let place_nl = nl_place(i, effort_ratio);
-            let place_cmd = {
-                name: place_nl,
-                steps: [unknown],
-            }
-            steps.push(place_cmd);
         }
     }
-    steps.push("craft");
+
+    steps.push({name: "craft", steps: [unknown]});
     return {
         name: nl,
         constraint: phi,
@@ -276,3 +308,8 @@ console.log(get_craft_np(target_id, 1.0));
 console.log(get_prereq_then_build(target_id, 0.0));
 console.log(get_prereq_then_build(target_id, 0.5));
 console.log(get_prereq_then_build(target_id, 1.0));
+
+module.exports = {
+    get_all_at_once,
+    get_prereq_then_build,
+}
