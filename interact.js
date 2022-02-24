@@ -1,7 +1,7 @@
 const user_model = require('./user_model.js');
 const mc_facts = require('./minecraft_facts.js');
 
-let interp_prob = 0.0;
+let interp_prob = 0.3;
 
 
 // my simulated interpreter, I am rather not confident in handling the
